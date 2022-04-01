@@ -184,7 +184,7 @@ const App = () => {
     return (
       <List.Item 
       style={styles.item}
-      action={[
+      actions={[
         <p
           style={styles.p}
           onClick={()=>deleteNote(item)}
