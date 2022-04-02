@@ -20,6 +20,7 @@ import { listNotes } from './graphql/queries';
 import { 
   createNote as CreateNote
   , deleteNote as DeleteNote
+  , updateNote as UpdateNote
 } from './graphql/mutations';
 
 const CLIENT_ID = uuid()
@@ -172,6 +173,33 @@ const App = () => {
     }
   }
 
+  const updateNote = async (noteToUpdate) => {
+    // Update the state and display optimistically
+    dispatch({
+      type: "SET_NOTES"
+      , notes: state.notes.map(x => ({
+        ...x
+        , completed: x === noteToUpdate ? !noteToUpdate.completed : noteToUpdate.completed
+      }))
+    });
+
+    // Then call the backend
+    try {
+      await API.graphql({
+        query: updateNote
+        , variables: {
+          input:{
+            id: noteToUpdate.id
+            , completed: !noteToUpdate.completed
+          }
+        }
+      })
+    } 
+    catch (err) {
+      console.error(err);
+    } 
+  }
+
   const onChange = (e) => {
     dispatch({
        type: 'SET_INPUT'
@@ -191,10 +219,16 @@ const App = () => {
         >
           Delete
         </p>
+        , <p
+          style={styles.p}
+          onClick={()=> updateNote(item)}
+        >
+          {item.completed ? 'Mark incomplete':'Mark complete'}
+        </p>
     ]}
       >
         <List.Item.Meta
-          title={item.name}
+          title={`${item.name}${item.completed ? ' (completed)':''}`}
           description={item.description}
         />
       </List.Item>
